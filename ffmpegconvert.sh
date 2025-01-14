@@ -27,36 +27,6 @@ if [ -e "$output_file" ]; then
     exit 1
 fi
 
-# Check for conversion between alossy and alossless and show a warning
-input_extension="${filename##*.}"
-if [[ " ${alllossy[@]} " =~ " ${input_extension} " ]] && [[ " ${alllossless[@]} " =~ " ${output_extension} " ]]; then
-    zenity --question --text="WARNING: Converting from a lossy to a lossless format.\n\nQuality will NOT improve.\n\nCompression artifacts will be present.\n\nThis betrays the point of lossless formats.\n\nPRESERVATIONISTS WILL WEEP.\n\nContinue?" \
-        --ok-label="Continue" --cancel-label="Cancel" --default-cancel  --icon-name="warning"
-    if [ $? -ne 0 ]; then
-        kill $ZENITY_PID
-        exit 1
-    fi
-fi
-
-if [[ " ${alllossless[@]} " =~ " ${input_extension} " ]] && [[ " ${alllossy[@]} " =~ " ${output_extension} " ]]; then
-    zenity --question --text="WARNING: Converting from a lossless to a lossy format.\n\nQuality will NOT be preserved.\n\nCompression artifacts will be PERMANENTLY introduced.\n\nCONVERTING BACK TO LOSSLESS WILL NOT UNDO THIS.\n\nContinue?" \
-        --ok-label="Continue" --cancel-label="Cancel" --default-cancel  --icon-name="warning"
-    if [ $? -ne 0 ]; then
-        kill $ZENITY_PID
-        exit 1
-    fi
-fi
-
-if [[ " ${superlossless[@]} " =~ " ${input_extension} " ]]; then
-    zenity --question --text="WARNING: This file is not only lossless, but contains\nadditional data such as layer information.\nConversion will discard this information.\n\nCONVERTING BACK TO LOSSLESS WILL NOT UNDO THIS.\n\nContinue?" \
-        --ok-label="Continue" --cancel-label="Cancel" --default-cancel  --icon-name="warning"
-    if [ $? -ne 0 ]; then
-        kill $ZENITY_PID
-        exit 1
-    fi
-fi
-
-
 if [[ " $input_format " == " audio " ]] || [[ " $input_format " == " video " ]]; then
     # ffmpeg cmd changes based on ext
     if [[ " ${alossy[@]} " =~ " ${output_extension} " ]] || [[ " ${alossless[@]} " =~ " ${output_extension} " ]]; then
