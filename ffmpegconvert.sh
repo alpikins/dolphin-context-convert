@@ -21,9 +21,21 @@ superlossless=("psd")
 alllossy=( "${alossy[@]}" "${ilossy[@]}" )
 alllossless=( "${alossless[@]}" "${ilossless[@]}" )
 
+dialog=${DIALOG:-"zenity"}
+
+function show_error () {
+    if [[ $dialog == "kdialog" ]]; then
+        kdialog --error "$1"
+    elif [[ $dialog == "zenity" ]]; then
+        zenity --error --text="$1"
+    else
+        echo "$1"
+    fi
+}
+
 # dont overwrite a file
 if [ -e "$output_file" ]; then
-    zenity --error --text="The target file already exists."
+    show_error "The target file already exists."
     exit 1
 fi
 
@@ -57,13 +69,13 @@ CONVERT_PID=$!
 if [ $? -eq 1 ]; then
     kill $CONVERT_PID
     rm -f "$output_file"
-    zenity --error --text="Conversion canceled. Target file deleted."
+    show_error "Conversion canceled. Target file deleted."
     exit 1
 fi
 
 # check exit statuses
 wait $CONVERT_PID
 if [ $? -ne 0 ]; then
-    zenity --error --text="An error occurred during conversion:\n\n$error_output"
+    show_error "An error occurred during conversion:\n\n$error_output"
     exit 1
 fi
