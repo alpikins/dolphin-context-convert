@@ -58,12 +58,31 @@ fi
 
 CONVERT_PID=$!
 
-# i hate zenity tbh
-(    while kill -0 $CONVERT_PID 2> /dev/null; do
-        echo "# Converting\n$filename\nto\n$output_file"
+function check_conversion() {
+    kill -0 $CONVERT_PID 2>/dev/null
+}
+
+if [[ $dialog == "kdialog" ]]; then
+    dialogRef=$(kdialog --progressbar "Initializing..." 0)
+    while check_conversion; do
         sleep 1
+        qdbus $dialogRef setLabelText "Converting\n$filename\nto\n$output_file"
     done
-) | zenity --progress --title="Converting Media" --text="Initializing..." --auto-close
+    qdbus $dialogRef close
+elif [[ $dialog == "zenity" ]]; then
+    (
+        while check_conversion; do
+            echo "# Converting\n$filename\nto\n$output_file"
+            sleep 1
+        done
+    ) | echo --progress --title="Converting Media" --text="Initializing..." --auto-close
+else
+    echo "Initializing..."
+    while check_conversion; do
+        sleep 1
+        echo "Converting $filename to $output_file"
+    done
+fi
 
 # check if cancelled
 if [ $? -eq 1 ]; then
